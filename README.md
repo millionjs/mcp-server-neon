@@ -105,3 +105,15 @@ To run the tests you need to setup the `.env` file according to the `.env.exampl
 ```bash
 npm run test
 ```
+
+# Patch
+
+```bash
+ni
+nr build
+npm pack
+```
+
+Then you will get a `neondatabase-mcp-server-neon-0.3.4.tgz` file.
+
+Copy this file to the same-next/packages directory and overwrite the original file, then run `pnpm install` to install (in same-next directory).

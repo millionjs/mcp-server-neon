@@ -22,7 +22,6 @@ import {
   getConnectionStringInputSchema,
   provisionNeonAuthInputSchema,
 } from './toolsSchema.js';
-import { ToolCallback } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { handleProvisionNeonAuth } from './handlers/neon-auth.js';
 import {
   NEON_DEFAULT_ROLE_NAME,
@@ -365,18 +364,6 @@ export const NEON_TOOLS = [
   },
 ];
 
-// Extract the tool names as a union type
-type NeonToolName = (typeof NEON_TOOLS)[number]['name'];
-
-export type ToolHandler<T extends NeonToolName> = ToolCallback<{
-  params: Extract<(typeof NEON_TOOLS)[number], { name: T }>['inputSchema'];
-}>;
-
-// Create a type for the tool handlers that directly maps each tool to its appropriate input schema
-type ToolHandlers = {
-  [K in NeonToolName]: ToolHandler<K>;
-};
-
 async function handleListProjects(params: ListProjectsParams) {
   const response = await neonClient.listProjects(params);
   if (response.status !== 200) {
@@ -706,7 +693,12 @@ export const NEON_HANDLERS = {
     content: [{ type: 'text', text: process.version }],
   }),
 
-  list_projects: async ({ params }) => {
+  list_projects: async (params: {
+    cursor: string;
+    limit: number;
+    search: string;
+    org_id: string;
+  }) => {
     const projects = await handleListProjects(params);
 
     return {
@@ -714,7 +706,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  create_project: async ({ params }) => {
+  create_project: async (params: { name: string }) => {
     const result = await handleCreateProject(params.name);
 
     // Get the connection string for the newly created project
@@ -751,7 +743,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  delete_project: async ({ params }) => {
+  delete_project: async (params: { projectId: string }) => {
     await handleDeleteProject(params.projectId);
 
     return {
@@ -767,7 +759,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  describe_project: async ({ params }) => {
+  describe_project: async (params: { projectId: string }) => {
     const result = await handleDescribeProject(params.projectId);
 
     return {
@@ -788,7 +780,12 @@ export const NEON_HANDLERS = {
     };
   },
 
-  run_sql: async ({ params }) => {
+  run_sql: async (params: {
+    sql: string;
+    databaseName: string;
+    projectId: string;
+    branchId?: string;
+  }) => {
     const result = await handleRunSql({
       sql: params.sql,
       databaseName: params.databaseName,
@@ -800,7 +797,12 @@ export const NEON_HANDLERS = {
     };
   },
 
-  run_sql_transaction: async ({ params }) => {
+  run_sql_transaction: async (params: {
+    sqlStatements: string[];
+    databaseName: string;
+    projectId: string;
+    branchId?: string;
+  }) => {
     const result = await handleRunSqlTransaction({
       sqlStatements: params.sqlStatements,
       databaseName: params.databaseName,
@@ -813,7 +815,12 @@ export const NEON_HANDLERS = {
     };
   },
 
-  describe_table_schema: async ({ params }) => {
+  describe_table_schema: async (params: {
+    tableName: string;
+    databaseName: string;
+    projectId: string;
+    branchId?: string;
+  }) => {
     const result = await handleDescribeTableSchema({
       tableName: params.tableName,
       databaseName: params.databaseName,
@@ -825,7 +832,11 @@ export const NEON_HANDLERS = {
     };
   },
 
-  get_database_tables: async ({ params }) => {
+  get_database_tables: async (params: {
+    projectId: string;
+    branchId?: string;
+    databaseName: string;
+  }) => {
     const result = await handleGetDatabaseTables({
       projectId: params.projectId,
       branchId: params.branchId,
@@ -842,7 +853,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  create_branch: async ({ params }) => {
+  create_branch: async (params: { projectId: string; branchName?: string }) => {
     const result = await handleCreateBranch({
       projectId: params.projectId,
       branchName: params.branchName,
@@ -864,7 +875,11 @@ export const NEON_HANDLERS = {
     };
   },
 
-  prepare_database_migration: async ({ params }) => {
+  prepare_database_migration: async (params: {
+    migrationSql: string;
+    databaseName: string;
+    projectId: string;
+  }) => {
     const result = await handleSchemaMigration({
       migrationSql: params.migrationSql,
       databaseName: params.databaseName,
@@ -898,7 +913,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  complete_database_migration: async ({ params }) => {
+  complete_database_migration: async (params: { migrationId: string }) => {
     const result = await handleCommitMigration({
       migrationId: params.migrationId,
     });
@@ -920,7 +935,11 @@ export const NEON_HANDLERS = {
     };
   },
 
-  describe_branch: async ({ params }) => {
+  describe_branch: async (params: {
+    projectId: string;
+    branchId?: string;
+    databaseName: string;
+  }) => {
     const result = await handleDescribeBranch({
       projectId: params.projectId,
       branchId: params.branchId,
@@ -939,7 +958,7 @@ export const NEON_HANDLERS = {
     };
   },
 
-  delete_branch: async ({ params }) => {
+  delete_branch: async (params: { projectId: string; branchId: string }) => {
     await handleDeleteBranch({
       projectId: params.projectId,
       branchId: params.branchId,
@@ -959,7 +978,13 @@ export const NEON_HANDLERS = {
     };
   },
 
-  get_connection_string: async ({ params }) => {
+  get_connection_string: async (params: {
+    projectId?: string;
+    branchId?: string;
+    computeId?: string;
+    databaseName?: string;
+    roleName?: string;
+  }) => {
     const result = await handleGetConnectionString({
       projectId: params.projectId,
       branchId: params.branchId,
@@ -992,10 +1017,13 @@ export const NEON_HANDLERS = {
     };
   },
 
-  provision_neon_auth: async ({ params }) => {
+  provision_neon_auth: async (params: {
+    projectId: string;
+    database: string;
+  }) => {
     return handleProvisionNeonAuth({
       projectId: params.projectId,
       database: params.database,
     });
   },
-} satisfies ToolHandlers;
+};

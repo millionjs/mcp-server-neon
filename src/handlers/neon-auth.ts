@@ -1,10 +1,12 @@
 import { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { neonClient } from '../index.js';
 import { NeonAuthSupportedAuthProvider } from '@neondatabase/api-client';
-import { provisionNeonAuthInputSchema } from '../toolsSchema.js';
-import { z } from 'zod';
 
-type Props = z.infer<typeof provisionNeonAuthInputSchema>;
+type Props = {
+  projectId: string;
+  database: string;
+};
+
 export async function handleProvisionNeonAuth({
   projectId,
   database,

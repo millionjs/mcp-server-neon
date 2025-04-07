@@ -1,12 +1,9 @@
-import { ListProjectsParams } from '@neondatabase/api-client';
 import { z } from 'zod';
 import { NEON_DEFAULT_DATABASE_NAME } from './constants.js';
 
-type ZodObjectParams<T> = z.ZodObject<{ [key in keyof T]: z.ZodType<T[key]> }>;
+export const nodeVersionInputSchema = {};
 
-export const nodeVersionInputSchema = z.object({});
-
-export const listProjectsInputSchema = z.object({
+export const listProjectsInputSchema = {
   cursor: z
     .string()
     .optional()
@@ -26,24 +23,24 @@ export const listProjectsInputSchema = z.object({
       'Search by project name or id. You can specify partial name or id values to filter results.',
     ),
   org_id: z.string().optional().describe('Search for projects by org_id.'),
-}) satisfies ZodObjectParams<ListProjectsParams>;
+};
 
-export const createProjectInputSchema = z.object({
+export const createProjectInputSchema = {
   name: z
     .string()
     .optional()
     .describe('An optional name of the project to create.'),
-});
+};
 
-export const deleteProjectInputSchema = z.object({
+export const deleteProjectInputSchema = {
   projectId: z.string().describe('The ID of the project to delete'),
-});
+};
 
-export const describeProjectInputSchema = z.object({
+export const describeProjectInputSchema = {
   projectId: z.string().describe('The ID of the project to describe'),
-});
+};
 
-export const runSqlInputSchema = z.object({
+export const runSqlInputSchema = {
   sql: z.string().describe('The SQL query to execute'),
   databaseName: z
     .string()
@@ -55,9 +52,9 @@ export const runSqlInputSchema = z.object({
     .string()
     .optional()
     .describe('An optional ID of the branch to execute the query against'),
-});
+};
 
-export const runSqlTransactionInputSchema = z.object({
+export const runSqlTransactionInputSchema = {
   sqlStatements: z.array(z.string()).describe('The SQL statements to execute'),
   databaseName: z
     .string()
@@ -69,9 +66,9 @@ export const runSqlTransactionInputSchema = z.object({
     .string()
     .optional()
     .describe('An optional ID of the branch to execute the query against'),
-});
+};
 
-export const describeTableSchemaInputSchema = z.object({
+export const describeTableSchemaInputSchema = {
   tableName: z.string().describe('The name of the table'),
   databaseName: z
     .string()
@@ -83,22 +80,22 @@ export const describeTableSchemaInputSchema = z.object({
     .string()
     .optional()
     .describe('An optional ID of the branch to execute the query against'),
-});
+};
 
-export const getDatabaseTablesInputSchema = z.object({
+export const getDatabaseTablesInputSchema = {
   projectId: z.string().describe('The ID of the project'),
   branchId: z.string().optional().describe('An optional ID of the branch'),
   databaseName: z.string().describe('The name of the database'),
-});
+};
 
-export const createBranchInputSchema = z.object({
+export const createBranchInputSchema = {
   projectId: z
     .string()
     .describe('The ID of the project to create the branch in'),
   branchName: z.string().optional().describe('An optional name for the branch'),
-});
+};
 
-export const prepareDatabaseMigrationInputSchema = z.object({
+export const prepareDatabaseMigrationInputSchema = {
   migrationSql: z
     .string()
     .describe('The SQL to execute to create the migration'),
@@ -108,24 +105,24 @@ export const prepareDatabaseMigrationInputSchema = z.object({
   projectId: z
     .string()
     .describe('The ID of the project to execute the query against'),
-});
+};
 
-export const completeDatabaseMigrationInputSchema = z.object({
+export const completeDatabaseMigrationInputSchema = {
   migrationId: z.string(),
-});
+};
 
-export const describeBranchInputSchema = z.object({
+export const describeBranchInputSchema = {
   projectId: z.string().describe('The ID of the project'),
   branchId: z.string().describe('An ID of the branch to describe'),
   databaseName: z.string().describe('The name of the database'),
-});
+};
 
-export const deleteBranchInputSchema = z.object({
+export const deleteBranchInputSchema = {
   projectId: z.string().describe('The ID of the project containing the branch'),
   branchId: z.string().describe('The ID of the branch to delete'),
-});
+};
 
-export const getConnectionStringInputSchema = z.object({
+export const getConnectionStringInputSchema = {
   projectId: z
     .string()
     .describe(
@@ -155,9 +152,9 @@ export const getConnectionStringInputSchema = z.object({
     .describe(
       'The name of the role to connect with. If not provided, the default role (usually "neondb_owner") will be used.',
     ),
-});
+};
 
-export const provisionNeonAuthInputSchema = z.object({
+export const provisionNeonAuthInputSchema = {
   projectId: z
     .string()
     .describe('The ID of the project to provision Neon Auth for'),
@@ -168,4 +165,4 @@ export const provisionNeonAuthInputSchema = z.object({
       `The database name to setup Neon Auth for. Defaults to '${NEON_DEFAULT_DATABASE_NAME}'`,
     )
     .default(NEON_DEFAULT_DATABASE_NAME),
-});
+};

@@ -720,24 +720,10 @@ export const NEON_HANDLERS = {
       content: [
         {
           type: 'text',
-          text: [
-            'Your Neon project is ready.',
-            `The project_id is "${result.project.id}"`,
-            `The branch name is "${result.branch.name}" (ID: ${result.branch.id})`,
-            `There is one database available on this branch, called "${result.databases[0].name}",`,
-            'but you can create more databases using SQL commands.',
-            '',
-            'Connection string details:',
-            `URI: ${connectionString.uri}`,
-            `Project ID: ${connectionString.projectId}`,
-            `Branch ID: ${connectionString.branchId}`,
-            `Database: ${connectionString.databaseName}`,
-            `Role: ${connectionString.roleName}`,
-            '',
-            'You can use this connection string with any PostgreSQL client to connect to your Neon database.',
-            'For example, with psql:',
-            `psql "${connectionString.uri}"`,
-          ].join('\n'),
+          text: JSON.stringify({
+            ...result,
+            connectionString,
+          }),
         },
       ],
     };

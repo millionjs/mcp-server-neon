@@ -1,0 +1,23 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+---
+description: General Rules
+globs: 
+alwaysApply: false
+---
+# General
+- Use bun to install dependencies
+
+# Error Handling
+- Use zod for runtime type validation
+- Prefer throwing errors over returning null/undefined
+- Use descriptive error messages
+
+# Naming Conventions
+- PascalCase for types/interfaces/classes
+- camelCase for variables/functions
+- Use type over interface where possible
+- Suffix tool classes with 'Tool'

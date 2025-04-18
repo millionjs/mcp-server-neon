@@ -1,4 +1,4 @@
-import type { AudioContent, ImageContent, TextContent } from '@modelcontextprotocol/sdk/types.js'
+import type { AudioContent, ImageContent, ResourceContents, TextContent } from '@modelcontextprotocol/sdk/types.js'
 
 import { fileTypeFromBuffer } from 'file-type'
 import { readFile } from 'node:fs/promises'
@@ -73,6 +73,32 @@ export async function imageContent(
     data: base64Data,
     mimeType: mimeType?.mime ?? 'image/png',
     type: 'image',
+  } as const
+}
+
+export async function resourceContents({
+  blob,
+  mimeType = 'text/plain',
+  text,
+  uri,
+}: {
+  blob?: string
+  mimeType?: string
+  text?: string
+  uri: string
+}): Promise<ResourceContents> {
+  if (mimeType === 'text/plain') {
+    return {
+      mimeType,
+      text,
+      uri,
+    } as const
+  }
+
+  return {
+    blob,
+    mimeType,
+    uri,
   } as const
 }
 

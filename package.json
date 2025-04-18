@@ -46,7 +46,7 @@
   },
   "dependencies": {
     "@better-fetch/fetch": "^1.1.18",
-    "@modelcontextprotocol/sdk": "^1.10.0",
+    "@modelcontextprotocol/sdk": "^1.10.1",
     "@neondatabase/api-client": "^2.0.0",
     "@neondatabase/serverless": "^1.0.0",
     "consola": "^3.4.2",

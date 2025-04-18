@@ -6,7 +6,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { MCP } from '../sdk/server'
-// import { NEON_RESOURCES } from './resources'
+import { NEON_RESOURCES } from './resources'
 import { NEON_TOOLS } from './tools'
 
 export type MCPSession = {
@@ -37,6 +37,7 @@ const server = new MCP({
     }
   },
   name: 'mcp-server-neon',
+  resources: NEON_RESOURCES,
   sse: {
     endpoint: '/sse',
     port: process.env.PORT ? Number.parseInt(process.env.PORT) : 9990,
@@ -45,9 +46,5 @@ const server = new MCP({
   transport: 'sse',
   version: packageJson.version,
 })
-
-// NEON_RESOURCES.forEach((resource) => {
-//   server.addResource(resource)
-// })
 
 server.start()

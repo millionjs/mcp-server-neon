@@ -1,6 +1,13 @@
 import { Server as MCPServer } from '@modelcontextprotocol/sdk/server/index.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { CallToolRequestSchema, ErrorCode, ListToolsRequestSchema, McpError } from '@modelcontextprotocol/sdk/types.js'
+import {
+  CallToolRequestSchema,
+  ErrorCode,
+  ListResourcesRequestSchema,
+  ListToolsRequestSchema,
+  McpError,
+  ReadResourceRequestSchema,
+} from '@modelcontextprotocol/sdk/types.js'
 import consola from 'consola'
 import { startSSEServer } from 'mcp-proxy'
 import zodToJsonSchema from 'zod-to-json-schema'
@@ -12,10 +19,16 @@ import { errorContent } from './utils'
 export class MCP<S extends Record<string, any> = Record<string, any>> {
   #authenticate: Authenticate<S> | undefined
   #mcpServer: MCPServer
+  #resources: Server<S>['resources']
   #session: S | undefined
   #sse: Server<S>['sse']
   #tools: Server<S>['tools']
   #transport: Server<S>['transport']
+  get #context(): ServerContext<S> {
+    return {
+      session: this.#session,
+    }
+  }
 
   constructor(server: Server<S>) {
     this.#mcpServer = new MCPServer(
@@ -25,16 +38,42 @@ export class MCP<S extends Record<string, any> = Record<string, any>> {
       },
       {
         capabilities: {
+          resources: {},
           tools: {},
         },
       },
     )
     this.#tools = server.tools
+    this.#resources = server.resources
     this.#transport = server.transport
     this.#authenticate = server.authenticate
     this.#sse = server.sse
 
     this.setupTools()
+    this.setupResources()
+  }
+
+  setupResources() {
+    const resources = this.#resources ?? []
+
+    this.#mcpServer.setRequestHandler(ListResourcesRequestSchema, async () => {
+      return {
+        resources,
+      }
+    })
+
+    this.#mcpServer.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+      const uri = request.params.uri
+      if (uri) {
+        const resource = resources.find((resource) => resource.uri === uri)
+        if (resource) {
+          return await resource.read(new URL(uri), this.#context)
+        }
+        throw new McpError(ErrorCode.MethodNotFound, `Unknown resource: ${request.params.uri}`)
+      }
+
+      throw new McpError(ErrorCode.InvalidRequest, 'Unknown resource request')
+    })
   }
 
   setupTools() {
@@ -74,11 +113,7 @@ export class MCP<S extends Record<string, any> = Record<string, any>> {
       let result: ToolResult
 
       try {
-        const context: ServerContext<S> = {
-          session: this.#session,
-        }
-
-        result = await tool.execute(args, context)
+        result = await tool.execute(args, this.#context)
       } catch (error) {
         return errorContent(`Error: ${error}`)
       }

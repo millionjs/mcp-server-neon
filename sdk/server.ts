@@ -6,6 +6,7 @@ import {
   ListResourcesRequestSchema,
   ListToolsRequestSchema,
   McpError,
+  PingRequestSchema,
   ReadResourceRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 import consola from 'consola'
@@ -49,8 +50,15 @@ export class MCP<S extends Record<string, any> = Record<string, any>> {
     this.#authenticate = server.authenticate
     this.#sse = server.sse
 
+    this.setupPing()
     this.setupTools()
     this.setupResources()
+  }
+
+  setupPing() {
+    this.#mcpServer.setRequestHandler(PingRequestSchema, async () => {
+      return {}
+    })
   }
 
   setupResources() {

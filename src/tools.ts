@@ -43,7 +43,7 @@ const nodeVersionTool = defineTool<MCPSession>({
 const listProjectsTool = defineTool<MCPSession>({
   description: `List all Neon projects in your account.`,
   execute: async (args, context) => {
-    const projects = await handleListProjects(context.session!.neonClient, args)
+    const projects = await handleListProjects(context.session!.neonClient!, args)
     return {
       content: [{ text: JSON.stringify(projects), type: 'text' }],
     }
@@ -54,10 +54,10 @@ const listProjectsTool = defineTool<MCPSession>({
 const createProjectTool = defineTool<MCPSession>({
   description: `Create a new Neon project. If someone is trying to create a database, use this tool.`,
   execute: async (args, context) => {
-    const result = await handleCreateProject(context.session!.neonClient, args.name)
+    const result = await handleCreateProject(context.session!.neonClient!, args.name)
 
     // Get the connection string for the newly created project
-    const connectionString = await handleGetConnectionString(context.session!.neonClient, {
+    const connectionString = await handleGetConnectionString(context.session!.neonClient!, {
       branchId: result.branch.id,
       databaseName: result.databases[0].name,
       projectId: result.project.id,
@@ -81,7 +81,7 @@ const createProjectTool = defineTool<MCPSession>({
 const deleteProjectTool = defineTool<MCPSession>({
   description: 'Delete a Neon project',
   execute: async (args, context) => {
-    await handleDeleteProject(context.session!.neonClient, args.projectId)
+    await handleDeleteProject(context.session!.neonClient!, args.projectId)
 
     return {
       content: [
@@ -98,7 +98,7 @@ const deleteProjectTool = defineTool<MCPSession>({
 const describeProjectTool = defineTool<MCPSession>({
   description: 'Describes a Neon project',
   execute: async (args, context) => {
-    const result = await handleDescribeProject(context.session!.neonClient, args.projectId)
+    const result = await handleDescribeProject(context.session!.neonClient!, args.projectId)
 
     return {
       content: [
@@ -121,7 +121,7 @@ const describeProjectTool = defineTool<MCPSession>({
 const runSqlTool = defineTool<MCPSession>({
   description: 'Execute a single SQL statement against a Neon database',
   execute: async (args, context) => {
-    const result = await handleRunSql(context.session!.neonClient, {
+    const result = await handleRunSql(context.session!.neonClient!, {
       branchId: args.branchId,
       databaseName: args.databaseName,
       projectId: args.projectId,
@@ -137,7 +137,7 @@ const runSqlTool = defineTool<MCPSession>({
 const runSqlTransactionTool = defineTool<MCPSession>({
   description: 'Execute a SQL transaction against a Neon database, should be used for multiple SQL statements',
   execute: async (args, context) => {
-    const result = await handleRunSqlTransaction(context.session!.neonClient, {
+    const result = await handleRunSqlTransaction(context.session!.neonClient!, {
       branchId: args.branchId,
       databaseName: args.databaseName,
       projectId: args.projectId,
@@ -154,7 +154,7 @@ const runSqlTransactionTool = defineTool<MCPSession>({
 const describeTableSchemaTool = defineTool<MCPSession>({
   description: 'Describe the schema of a table in a Neon database',
   execute: async (args, context) => {
-    const result = await handleDescribeTableSchema(context.session!.neonClient, {
+    const result = await handleDescribeTableSchema(context.session!.neonClient!, {
       branchId: args.branchId,
       databaseName: args.databaseName,
       projectId: args.projectId,
@@ -170,7 +170,7 @@ const describeTableSchemaTool = defineTool<MCPSession>({
 const getDatabaseTablesTool = defineTool<MCPSession>({
   description: 'Get all tables in a Neon database',
   execute: async (args, context) => {
-    const result = await handleGetDatabaseTables(context.session!.neonClient, {
+    const result = await handleGetDatabaseTables(context.session!.neonClient!, {
       branchId: args.branchId,
       databaseName: args.databaseName,
       projectId: args.projectId,
@@ -191,7 +191,7 @@ const getDatabaseTablesTool = defineTool<MCPSession>({
 const createBranchTool = defineTool<MCPSession>({
   description: 'Create a branch in a Neon project',
   execute: async (args, context) => {
-    const result = await handleCreateBranch(context.session!.neonClient, {
+    const result = await handleCreateBranch(context.session!.neonClient!, {
       branchName: args.branchName,
       projectId: args.projectId,
     })
@@ -340,7 +340,7 @@ const prepareDatabaseMigrationTool = defineTool<MCPSession>({
   </error_handling>
           `,
   execute: async (args, context) => {
-    const result = await handleSchemaMigration(context.session!.neonClient, {
+    const result = await handleSchemaMigration(context.session!.neonClient!, {
       databaseName: args.databaseName,
       migrationSql: args.migrationSql,
       projectId: args.projectId,
@@ -379,7 +379,7 @@ const completeDatabaseMigrationTool = defineTool<MCPSession>({
   description:
     'Complete a database migration when the user confirms the migration is ready to be applied to the main branch. This tool also lets the client know that the temporary branch created by the prepare_database_migration tool has been deleted.',
   execute: async (args, context) => {
-    const result = await handleCommitMigration(context.session!.neonClient, {
+    const result = await handleCommitMigration(context.session!.neonClient!, {
       migrationId: args.migrationId,
     })
 
@@ -405,7 +405,7 @@ const completeDatabaseMigrationTool = defineTool<MCPSession>({
 const describeBranchTool = defineTool<MCPSession>({
   description: 'Get a tree view of all objects in a branch, including databases, schemas, tables, views, and functions',
   execute: async (args, context) => {
-    const result = await handleDescribeBranch(context.session!.neonClient, {
+    const result = await handleDescribeBranch(context.session!.neonClient!, {
       branchId: args.branchId,
       databaseName: args.databaseName,
       projectId: args.projectId,
@@ -426,7 +426,7 @@ const describeBranchTool = defineTool<MCPSession>({
 const deleteBranchTool = defineTool<MCPSession>({
   description: 'Delete a branch from a Neon project',
   execute: async (args, context) => {
-    await handleDeleteBranch(context.session!.neonClient, {
+    await handleDeleteBranch(context.session!.neonClient!, {
       branchId: args.branchId,
       projectId: args.projectId,
     })
@@ -448,7 +448,7 @@ const deleteBranchTool = defineTool<MCPSession>({
 const getConnectionStringTool = defineTool<MCPSession>({
   description: 'Get a PostgreSQL connection string for a Neon database with all parameters being optional',
   execute: async (args, context) => {
-    const result = await handleGetConnectionString(context.session!.neonClient, {
+    const result = await handleGetConnectionString(context.session!.neonClient!, {
       branchId: args.branchId,
       computeId: args.computeId,
       databaseName: args.databaseName,
@@ -605,7 +605,7 @@ const provisionNeonAuthTool = defineTool<MCPSession>({
       \`\`\`
         `,
   execute: async (args, context) => {
-    const neonClient = context.session!.neonClient
+    const neonClient = context.session!.neonClient!
     const projectId = args.projectId
     const database = args.database ?? NEON_DEFAULT_DATABASE_NAME
 

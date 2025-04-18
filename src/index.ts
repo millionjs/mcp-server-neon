@@ -10,7 +10,7 @@ import { NEON_RESOURCES } from './resources'
 import { NEON_TOOLS } from './tools'
 
 export type MCPSession = {
-  neonClient: Api<any>
+  neonClient?: Api<any>
 }
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

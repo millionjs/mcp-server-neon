@@ -6,7 +6,6 @@ import {
   ImageContentSchema,
   ReadResourceResultSchema,
   ResourceContentsSchema,
-  ResourceTemplate,
   TextContentSchema,
 } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
@@ -22,19 +21,30 @@ export type Authenticate<T> = (request: IncomingMessage) => Promise<T>
 
 export type ErrorContent = z.infer<typeof ErrorContentSchema>
 
-export type Resource<S extends Record<string, any> = Record<string, any>> = {
+export type Parameters = z.ZodType
+
+export type Resource<S extends ServerSession = ServerSession> = {
   description?: string
   mimeType?: string
   name: string
   read: (uri: URL, context: ServerContext<S>) => Promise<z.infer<typeof ReadResourceResultSchema>>
   uri?: string
-  uriTemplate?: string
 }
 
-export interface Server<S extends Record<string, any> = Record<string, any>> {
+export type ResourceTemplate<P extends Parameters = Parameters, S extends ServerSession = ServerSession> = {
+  description?: string
+  mimeType?: string
+  name: string
+  parameters?: P
+  read: (uri: URL, params: z.infer<P>, context: ServerContext<S>) => Promise<z.infer<typeof ReadResourceResultSchema>>
+  uriTemplate: string
+}
+
+export interface Server<S extends ServerSession = ServerSession> {
   authenticate?: Authenticate<S>
   name: string
   resources?: Resource[]
+  resourceTemplates?: ResourceTemplate[]
   sse?: {
     endpoint: `/${string}`
     port: number
@@ -44,26 +54,19 @@ export interface Server<S extends Record<string, any> = Record<string, any>> {
   version: `${number}.${number}.${number}`
 }
 
-export interface ServerContext<T extends Record<string, any>> {
+export interface ServerContext<T extends ServerSession> {
   session?: T
 }
 
-export type Tool<P extends ToolParameters = ToolParameters, S extends Record<string, any> = Record<string, any>> = {
+export type ServerSession = Record<string, any>
+
+export { AudioContentSchema, ImageContentSchema, ReadResourceResultSchema, ResourceContentsSchema, TextContentSchema }
+
+export type Tool<P extends Parameters = Parameters, S extends ServerSession = ServerSession> = {
   description?: string
   execute: (args: z.infer<P>, context: ServerContext<S>) => Promise<ToolResult>
   name: string
   parameters?: P
 }
-
-export {
-  AudioContentSchema,
-  ImageContentSchema,
-  ReadResourceResultSchema,
-  ResourceContentsSchema,
-  ResourceTemplate,
-  TextContentSchema,
-}
-
-export type ToolParameters = z.ZodType
 
 export type ToolResult = z.infer<typeof CallToolResultSchema>

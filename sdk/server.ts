@@ -4,6 +4,7 @@ import {
   CallToolRequestSchema,
   ErrorCode,
   ListResourcesRequestSchema,
+  ListResourceTemplatesRequestSchema,
   ListToolsRequestSchema,
   McpError,
   PingRequestSchema,
@@ -11,16 +12,18 @@ import {
 } from '@modelcontextprotocol/sdk/types.js'
 import consola from 'consola'
 import { startSSEServer } from 'mcp-proxy'
+import parseURITemplate from 'uri-templates'
 import zodToJsonSchema from 'zod-to-json-schema'
 
-import type { Authenticate, Server, ServerContext, ToolResult } from './types'
+import type { Authenticate, Server, ServerContext, ServerSession, ToolResult } from './types'
 
 import { errorContent } from './utils'
 
-export class MCP<S extends Record<string, any> = Record<string, any>> {
+export class MCP<S extends ServerSession = ServerSession> {
   #authenticate: Authenticate<S> | undefined
   #mcpServer: MCPServer
   #resources: Server<S>['resources']
+  #resourceTemplates: Server<S>['resourceTemplates']
   #session: S | undefined
   #sse: Server<S>['sse']
   #tools: Server<S>['tools']
@@ -46,6 +49,7 @@ export class MCP<S extends Record<string, any> = Record<string, any>> {
     )
     this.#tools = server.tools
     this.#resources = server.resources
+    this.#resourceTemplates = server.resourceTemplates
     this.#transport = server.transport
     this.#authenticate = server.authenticate
     this.#sse = server.sse
@@ -63,19 +67,40 @@ export class MCP<S extends Record<string, any> = Record<string, any>> {
 
   setupResources() {
     const resources = this.#resources ?? []
+    const resourceTemplates = this.#resourceTemplates ?? []
 
+    // List resources
     this.#mcpServer.setRequestHandler(ListResourcesRequestSchema, async () => {
       return {
         resources,
       }
     })
 
+    // List resource templates
+    this.#mcpServer.setRequestHandler(ListResourceTemplatesRequestSchema, async () => {
+      return {
+        resourceTemplates,
+      }
+    })
+
     this.#mcpServer.setRequestHandler(ReadResourceRequestSchema, async (request) => {
       const uri = request.params.uri
       if (uri) {
+        // Read resource
         const resource = resources.find((resource) => resource.uri === uri)
         if (resource) {
           return await resource.read(new URL(uri), this.#context)
+        } // Read resource template
+        else {
+          for (const resourceTemplate of resourceTemplates) {
+            const uriTemplate = parseURITemplate(resourceTemplate.uriTemplate)
+            const match = uriTemplate.fromUri(request.params.uri)
+            if (!match) {
+              continue
+            }
+            const uri = uriTemplate.fill(match)
+            return await resourceTemplate.read(new URL(uri), match, this.#context)
+          }
         }
         throw new McpError(ErrorCode.MethodNotFound, `Unknown resource: ${request.params.uri}`)
       }

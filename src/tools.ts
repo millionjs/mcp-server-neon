@@ -54,25 +54,55 @@ const listProjectsTool = defineTool<MCPSession>({
 const createProjectTool = defineTool<MCPSession>({
   description: `Create a new Neon project. If someone is trying to create a database, use this tool.`,
   execute: async (args, context) => {
-    const result = await handleCreateProject(context.session!.neonClient!, args.name)
+    try {
+      const result = await handleCreateProject(context.session!.neonClient!, args.name)
 
-    // Get the connection string for the newly created project
-    const connectionString = await handleGetConnectionString(context.session!.neonClient!, {
-      branchId: result.branch.id,
-      databaseName: result.databases[0].name,
-      projectId: result.project.id,
-    })
+      // Get the connection string for the newly created project
+      const connectionString = await handleGetConnectionString(context.session!.neonClient!, {
+        branchId: result.branch.id,
+        databaseName: result.databases[0].name,
+        projectId: result.project.id,
+      })
 
-    return {
-      content: [
-        {
-          text: JSON.stringify({
-            ...result,
-            connectionString,
-          }),
-          type: 'text',
-        },
-      ],
+      return {
+        content: [
+          {
+            text: [
+              'Your Neon project is ready.',
+              `The project_id is "${result.project.id}"`,
+              `The branch name is "${result.branch.name}" (ID: ${result.branch.id})`,
+              `There is one database available on this branch, called "${result.databases[0].name}",`,
+              'but you can create more databases using SQL commands.',
+              '',
+              'Connection string details:',
+              `URI: ${connectionString.uri}`,
+              `Project ID: ${connectionString.projectId}`,
+              `Branch ID: ${connectionString.branchId}`,
+              `Database: ${connectionString.databaseName}`,
+              `Role: ${connectionString.roleName}`,
+              '',
+              'You can use this connection string with any PostgreSQL client to connect to your Neon database.',
+              'For example, with psql:',
+              `psql "${connectionString.uri}"`,
+            ].join('\n'),
+            type: 'text',
+          },
+        ],
+      }
+    } catch (error) {
+      return {
+        content: [
+          {
+            text: [
+              'An error occurred while creating the project.',
+              'Error details:',
+              `${error}`,
+              'If you have reached the Neon project limit, please upgrade your account in this link: https://console.neon.tech/app/billing',
+            ].join('\n'),
+            type: 'text',
+          },
+        ],
+      }
     }
   },
   name: 'create_project' as const,
@@ -786,7 +816,7 @@ async function handleCreateProject(neonClient: Api<any>, name?: string) {
     project: { name },
   })
   if (response.status !== 201) {
-    throw new Error(`Failed to create project: ${response.statusText}`)
+    throw new Error(`Failed to create project: ${JSON.stringify(response)}`)
   }
   return response.data
 }

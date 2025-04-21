@@ -862,7 +862,7 @@ async function handleDescribeBranch(
     role_name: NEON_DEFAULT_ROLE_NAME,
   })
   const runQuery = neon(connectionString.data.uri)
-  const response = await runQuery.transaction(DESCRIBE_DATABASE_STATEMENTS.map((sql) => runQuery(sql as any)))
+  const response = await runQuery.transaction(DESCRIBE_DATABASE_STATEMENTS.map((sql) => runQuery.query(sql)))
 
   return response
 }
@@ -1001,7 +1001,7 @@ async function handleGetDatabaseTables(
     ORDER BY table_schema, table_name;
   `
 
-  const tables = await runQuery(query as any)
+  const tables = await runQuery.query(query)
   return tables
 }
 
@@ -1034,7 +1034,7 @@ async function handleRunSql(
     role_name: NEON_DEFAULT_ROLE_NAME,
   })
   const runQuery = neon(connectionString.data.uri)
-  const response = await runQuery(sql as any)
+  const response = await runQuery.query(sql)
 
   return response
 }
@@ -1060,7 +1060,7 @@ async function handleRunSqlTransaction(
     role_name: NEON_DEFAULT_ROLE_NAME,
   })
   const runQuery = neon(connectionString.data.uri)
-  const response = await runQuery.transaction(sqlStatements.map((sql) => runQuery(sql as any)))
+  const response = await runQuery.transaction(sqlStatements.map((sql) => runQuery.query(sql)))
 
   return response
 }

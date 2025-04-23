@@ -535,7 +535,7 @@ const provisionNeonAuthTool = defineTool<MCPSession>({
         - \`STACK_SECRET_SERVER_KEY\`
       3. To setup Stack Auth, run following command:
         \`\`\`bash
-        npx @stackframe/init-stack@2.7.25 . --no-browser --bun
+        npx @stackframe/init-stack . --no-browser --bun
         \`\`\`
         This command will automaticallysetup the project with -
         - It will add \`@stackframe/stack\` dependency to \`package.json\`
